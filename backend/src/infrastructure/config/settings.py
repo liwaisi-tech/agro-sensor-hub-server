@@ -13,10 +13,10 @@ class Settings(BaseSettings):
     # Database Settings
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
-    POSTGRES_HOST: str = "localhost"
+    POSTGRES_HOST: str = "0.0.0.0"
     POSTGRES_PORT: int = 5432
     POSTGRES_DB: str = "agro_sensor_hub"
-    DATABASE_URL: Optional[str] = None
+    DATABASE_URL: str = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
     
     # API Settings
     API_PREFIX: str = "/agro-sensor-hub/api"
@@ -36,9 +36,6 @@ class Settings(BaseSettings):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if not self.DATABASE_URL:
-            self.DATABASE_URL = f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-
 
 @lru_cache()
 def get_settings() -> Settings:
