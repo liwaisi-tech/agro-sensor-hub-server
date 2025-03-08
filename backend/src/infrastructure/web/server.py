@@ -2,7 +2,7 @@ import uvicorn
 from typing import Any
 
 def start_server(host: str = "0.0.0.0", 
-                port: int = 8000, 
+                port: int = 8080, 
                 reload: bool = False,
                 **kwargs: Any) -> None:
     """
