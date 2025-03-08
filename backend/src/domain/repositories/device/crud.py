@@ -11,17 +11,16 @@ class DeviceData(TypedDict):
     device_name: str
 
 class DeviceRepository:
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self):
+        pass
 
-    def create(self, device_create: DeviceCreate) -> DeviceResponse:
+    def create(self, db: Session, device_create: DeviceCreate) -> DeviceResponse:
         """
         Create a new device record.
         
         Args:
-            device_data: Dictionary containing device information
-                mac_address: The MAC address of the device (format: XX:XX:XX:XX:XX:XX)
-                device_name: The name of the device
+            db: Database session
+            device_create: Device creation data transfer object
             
         Returns:
             The created Device record
@@ -30,47 +29,50 @@ class DeviceRepository:
             mac_address=device_create.mac_address,
             name=str(device_create.name)
         )
-        self.db.add(device)
-        self.db.commit()
-        self.db.refresh(device)
+        db.add(device)
+        db.commit()
+        db.refresh(device)
         return device
 
-    def update(self, device_create: DeviceCreate) -> Optional[Device]:
+    def update(self, db: Session, device_create: DeviceCreate) -> Optional[Device]:
         """
         Update an existing device record.
         
         Args:
-            device_data: Dictionary containing device information
-                mac_address: The MAC address of the device to update
-                device_name: The new name for the device
+            db: Database session
+            device_create: Device creation data transfer object
             
         Returns:
             Updated Device record if found, None otherwise
         """
-        device = self.db.query(Device).filter(Device.mac_address == device_create.mac_address).first()
+        device = db.query(Device).filter(Device.mac_address == device_create.mac_address).first()
         if device:
             setattr(device, 'name', str(device_create.name))
-            self.db.commit()
-            self.db.refresh(device)
+            db.commit()
+            db.refresh(device)
         return device
 
-    def get_by_mac_address(self, mac_address: str) -> Optional[Device]:
+    def get_by_mac_address(self, db: Session, mac_address: str) -> Optional[Device]:
         """
         Get a device by its MAC address.
         
         Args:
+            db: Database session
             mac_address: The MAC address of the device to retrieve
             
         Returns:
             Device record if found, None otherwise
         """
-        return self.db.query(Device).filter(Device.mac_address == mac_address).first()
+        return db.query(Device).filter(Device.mac_address == mac_address).first()
 
-    def get_all_devices(self) -> list[Device]:
+    def get_all_devices(self, db: Session) -> list[Device]:
         """
         Get all devices sorted by name.
         
+        Args:
+            db: Database session
+            
         Returns:
             List of Device records sorted alphabetically by name
         """
-        return self.db.query(Device).order_by(Device.name).all()
+        return db.query(Device).order_by(Device.name).all()
