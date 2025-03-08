@@ -4,12 +4,13 @@ from sqlalchemy import pool
 from alembic import context
 from infrastructure.config.settings import get_settings
 from infrastructure.database.base import Base
+import infrastructure.database.models  # Import all models to register them with SQLAlchemy
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-# Get database URL from settings
+# Get the database URL from settings
 settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
