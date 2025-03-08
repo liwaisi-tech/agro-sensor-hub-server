@@ -1,0 +1,4 @@
+from infrastructure.web import start_server
+
+if __name__ == "__main__":
+    start_server(reload=True)  # Enable reload for development 
