@@ -1,5 +1,6 @@
 from typing import Optional, TypedDict
 
+from domain.dtos.device.dtos import DeviceCreate, DeviceResponse
 from sqlalchemy.orm import Session
 
 from domain.models.device import Device
@@ -13,7 +14,7 @@ class DeviceRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def create(self, device_data: DeviceData) -> Device:
+    def create(self, device_create: DeviceCreate) -> DeviceResponse:
         """
         Create a new device record.
         
@@ -26,15 +27,15 @@ class DeviceRepository:
             The created Device record
         """
         device = Device(
-            mac_address=device_data['mac_address'],
-            device_name=device_data['device_name']
+            mac_address=device_create.mac_address,
+            name=str(device_create.name)
         )
         self.db.add(device)
         self.db.commit()
         self.db.refresh(device)
         return device
 
-    def update(self, device_data: DeviceData) -> Optional[Device]:
+    def update(self, device_create: DeviceCreate) -> Optional[Device]:
         """
         Update an existing device record.
         
@@ -46,9 +47,9 @@ class DeviceRepository:
         Returns:
             Updated Device record if found, None otherwise
         """
-        device = self.db.query(Device).filter(Device.mac_address == device_data['mac_address']).first()
+        device = self.db.query(Device).filter(Device.mac_address == device_create.mac_address).first()
         if device:
-            device.device_name = device_data['device_name']
+            setattr(device, 'name', str(device_create.name))
             self.db.commit()
             self.db.refresh(device)
         return device
@@ -64,3 +65,12 @@ class DeviceRepository:
             Device record if found, None otherwise
         """
         return self.db.query(Device).filter(Device.mac_address == mac_address).first()
+
+    def get_all_devices(self) -> list[Device]:
+        """
+        Get all devices sorted by name.
+        
+        Returns:
+            List of Device records sorted alphabetically by name
+        """
+        return self.db.query(Device).order_by(Device.name).all()
