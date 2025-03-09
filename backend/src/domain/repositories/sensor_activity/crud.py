@@ -1,90 +1,72 @@
 from datetime import datetime
-from typing import Optional, List, TypedDict
-
+from typing import Optional, List
 from sqlalchemy import desc
 from sqlalchemy.orm import Session, joinedload
 
 from domain.models.sensor_activity import SensorActivity
-
-class SensorActivityData(TypedDict):
-    """TypedDict for sensor activity data."""
-    mac_address: str
-    zone: str
-    env_humidity: float
-    env_temperature: float
-    ground_sensor_1: float
-    ground_sensor_2: float
-    ground_sensor_3: float
-    ground_sensor_4: float
-    ground_sensor_5: float
-    ground_sensor_6: float
+from domain.dtos.sensor_activity.dtos import SensorActivityCreate, SensorActivityResponse
 
 class SensorActivityRepository:
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self):
+        pass
 
-    def create(self, activity_data: SensorActivityData) -> SensorActivity:
+    def create(self, db: Session, activity_create: SensorActivityCreate) -> SensorActivityResponse:
         """
         Create a new sensor activity record.
         
         Args:
-            activity_data: Dictionary containing sensor activity information
-                mac_address: The MAC address of the device (format: XX:XX:XX:XX:XX:XX)
-                zone: The zone where the sensor is located
-                env_humidity: Environmental humidity reading
-                env_temperature: Environmental temperature reading
-                ground_sensor_1: Ground sensor 1 reading
-                ground_sensor_2: Ground sensor 2 reading
-                ground_sensor_3: Ground sensor 3 reading
-                ground_sensor_4: Ground sensor 4 reading
-                ground_sensor_5: Ground sensor 5 reading
-                ground_sensor_6: Ground sensor 6 reading
+            db: Database session
+            activity_create: Sensor activity creation data transfer object
             
         Returns:
-            The created SensorActivity record with device information
+            The created SensorActivity record as SensorActivityResponse
         """
         activity = SensorActivity(
-            device_id=activity_data['mac_address'],
-            zone=activity_data['zone'],
-            env_humidity=activity_data['env_humidity'],
-            env_temperature=activity_data['env_temperature'],
-            ground_sensor_1=activity_data['ground_sensor_1'],
-            ground_sensor_2=activity_data['ground_sensor_2'],
-            ground_sensor_3=activity_data['ground_sensor_3'],
-            ground_sensor_4=activity_data['ground_sensor_4'],
-            ground_sensor_5=activity_data['ground_sensor_5'],
-            ground_sensor_6=activity_data['ground_sensor_6']
+            device_id=activity_create.mac_address,
+            zone=activity_create.zone,
+            env_humidity=activity_create.env_humidity,
+            env_temperature=activity_create.env_temperature,
+            ground_sensor_1=activity_create.ground_sensor_1,
+            ground_sensor_2=activity_create.ground_sensor_2,
+            ground_sensor_3=activity_create.ground_sensor_3,
+            ground_sensor_4=activity_create.ground_sensor_4,
+            ground_sensor_5=activity_create.ground_sensor_5,
+            ground_sensor_6=activity_create.ground_sensor_6
         )
-        self.db.add(activity)
-        self.db.commit()
-        self.db.refresh(activity)
+        db.add(activity)
+        db.commit()
+        db.refresh(activity)
         
-        # Reload the activity with device information
-        return self.db.query(SensorActivity)\
+        # Reload with device information
+        activity = db.query(SensorActivity)\
             .options(joinedload(SensorActivity.device))\
             .filter(SensorActivity.id == activity.id)\
             .first()
+            
+        return SensorActivityResponse.model_validate(activity)
 
     def get_filtered_list(
         self,
+        db: Session,
         skip: int = 0,
         limit: int = 10,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None
-    ) -> List[SensorActivity]:
+    ) -> List[SensorActivityResponse]:
         """
         Get a filtered and paginated list of sensor activities.
         
         Args:
+            db: Database session
             skip: Number of records to skip (offset)
             limit: Maximum number of records to return
             start_date: Optional start date filter
             end_date: Optional end date filter
             
         Returns:
-            List of SensorActivity records with device information
+            List of SensorActivity records as SensorActivityResponse
         """
-        query = self.db.query(SensorActivity)\
+        query = db.query(SensorActivity)\
             .options(joinedload(SensorActivity.device))
         
         if start_date:
@@ -92,38 +74,43 @@ class SensorActivityRepository:
         if end_date:
             query = query.filter(SensorActivity.created_at <= end_date)
             
-        return query.order_by(desc(SensorActivity.created_at)).offset(skip).limit(limit).all()
+        activities = query.order_by(desc(SensorActivity.created_at)).offset(skip).limit(limit).all()
+        return [SensorActivityResponse.model_validate(activity) for activity in activities]
 
-    def get_by_id(self, activity_id: int) -> Optional[SensorActivity]:
+    def get_by_id(self, db: Session, activity_id: int) -> Optional[SensorActivityResponse]:
         """
         Get a sensor activity record by its ID.
         
         Args:
+            db: Database session
             activity_id: The ID of the sensor activity record
             
         Returns:
-            SensorActivity record with device information if found, None otherwise
+            SensorActivity record as SensorActivityResponse if found, None otherwise
         """
-        return self.db.query(SensorActivity)\
+        activity = db.query(SensorActivity)\
             .options(joinedload(SensorActivity.device))\
             .filter(SensorActivity.id == activity_id)\
             .first()
+        return SensorActivityResponse.model_validate(activity) if activity else None
 
-    def get_latest_by_mac_address(self, mac_address: str) -> Optional[SensorActivity]:
+    def get_latest_by_mac_address(self, db: Session, mac_address: str) -> Optional[SensorActivityResponse]:
         """
         Get the latest sensor activity record for a specific MAC address.
         
         Args:
+            db: Database session
             mac_address: The MAC address of the sensor
             
         Returns:
-            Most recent SensorActivity record with device information for the MAC address if found, None otherwise
+            Most recent SensorActivity record as SensorActivityResponse for the MAC address if found, None otherwise
         """
-        return (
-            self.db.query(SensorActivity)
+        activity = (
+            db.query(SensorActivity)
             .options(joinedload(SensorActivity.device))
             .filter(SensorActivity.device_id == mac_address)
             .order_by(desc(SensorActivity.created_at))
             .first()
         )
+        return SensorActivityResponse.model_validate(activity) if activity else None
     

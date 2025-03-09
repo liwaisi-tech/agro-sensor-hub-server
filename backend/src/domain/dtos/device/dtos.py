@@ -10,7 +10,7 @@ class DeviceBase(BaseModel):
     ] = Field(
         title="MAC Address",
         description="Device MAC address in format XX:XX:XX:XX:XX:XX",
-        examples=["34:97:f6:d0:85:52"]
+        examples=["35:98:f4:d1:86:51"]
     )
     
     name: Optional[Annotated[
@@ -28,7 +28,7 @@ class DeviceCreate(DeviceBase):
     class Config:
         json_schema_extra = {
             "example": {
-                "mac_address": "34:97:f6:d0:85:52",
+                "mac_address": "35:98:f4:d1:86:51",
                 "name": "AgroSensor-Elite-2024"
             }
         }
@@ -50,7 +50,7 @@ class DeviceResponse(DeviceBase):
         from_attributes = True  # Allows conversion from SQLAlchemy model to Pydantic model
         json_schema_extra = {
             "example": {
-                "mac_address": "34:97:f6:d0:85:52",
+                "mac_address": "35:98:f4:d1:86:51",
                 "name": "AgroSensor-Elite-2024",
                 "created_at": "2024-03-09T14:11:36.387495Z",
                 "updated_at": "2024-03-09T14:15:51.893824Z"
