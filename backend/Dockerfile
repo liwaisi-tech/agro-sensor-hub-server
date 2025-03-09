@@ -20,14 +20,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
-COPY . .
-
-# Create an entrypoint script
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
+COPY src/ ./src/
+COPY entrypoint.sh /app/
+# Convert line endings and set permissions
+RUN sed -i 's/\r$//' /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
 
 # Expose the port from environment (default to 8000 if not set)
 EXPOSE ${PORT:-8000}
 
 # Use entrypoint script to start the application
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
