@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     # Application Settings
     APP_NAME: str = "Agro Sensor Hub"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = False
+    LOG_LEVEL: str = "INFO"
     
     # Database Settings
     POSTGRES_USER: str = "postgres"

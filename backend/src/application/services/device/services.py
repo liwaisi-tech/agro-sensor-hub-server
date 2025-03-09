@@ -11,7 +11,8 @@ class DeviceService:
 
     def create_device(self, db: Session, device: DeviceCreate) -> DeviceResponse:
         try:
-            if self.device_repository.get_by_mac_address(db, device.mac_address):
+            existing_device = self.device_repository.get_by_mac_address(db, device.mac_address)
+            if existing_device:
                 raise HTTPException(status_code=400, detail="Device already exists")
             if device.name is None:
                 device.name = device.mac_address
@@ -24,7 +25,10 @@ class DeviceService:
             raise HTTPException(status_code=404, detail="Device not found")
         if device.name is None:
             device.name = device.mac_address
-        return self.device_repository.update(db, device)
+        updated_device = self.device_repository.update(db, device)
+        if not updated_device:
+            raise HTTPException(status_code=500, detail="Failed to update device")
+        return updated_device
     
     def get_device_by_mac_address(self, db: Session, mac_address: str) -> DeviceResponse:
         device = self.device_repository.get_by_mac_address(db, mac_address)
@@ -45,5 +49,5 @@ class DeviceService:
         devices = self.device_repository.get_all_devices(db)
         if len(devices) == 0:
             raise HTTPException(status_code=404, detail="No devices found")
-        return [DeviceResponse.model_validate(device) for device in devices]
+        return devices
     

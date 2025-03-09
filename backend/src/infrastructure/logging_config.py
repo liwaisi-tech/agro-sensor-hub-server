@@ -1,80 +1,130 @@
 import logging
 import logging.config
 import sys
-from pathlib import Path
 from typing import Dict, Any
-from datetime import datetime
+from infrastructure.config.settings import get_settings
 
-# Create logs directory if it doesn't exist
-logs_dir = Path("logs")
-logs_dir.mkdir(exist_ok=True)
+# ANSI color codes
+COLORS = {
+    'GREY': '\033[38;21m',
+    'BLUE': '\033[34m',
+    'YELLOW': '\033[33m',
+    'RED': '\033[31m',
+    'BOLD_RED': '\033[31;1m',
+    'GREEN': '\033[32m',
+    'RESET': '\033[0m'
+}
+
+class ColorFormatter(logging.Formatter):
+    """Custom formatter that adds colors based on log level"""
+    
+    def __init__(self, fmt: str):
+        super().__init__()
+        self.fmt = fmt
+        self.FORMATS = {
+            logging.DEBUG: COLORS['BLUE'] + fmt + COLORS['RESET'],
+            logging.INFO: COLORS['GREEN'] + fmt + COLORS['RESET'],
+            logging.WARNING: COLORS['YELLOW'] + fmt + COLORS['RESET'],
+            logging.ERROR: COLORS['RED'] + fmt + COLORS['RESET'],
+            logging.CRITICAL: COLORS['BOLD_RED'] + fmt + COLORS['RESET']
+        }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
 
 def get_logger_config() -> Dict[str, Any]:
     """Returns the logging configuration dictionary"""
+    settings = get_settings()
     return {
         "version": 1,
         "disable_existing_loggers": False,
         "formatters": {
             "standard": {
-                "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+                "()": ColorFormatter,
+                "fmt": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
             }
         },
         "handlers": {
             "console": {
                 "class": "logging.StreamHandler",
-                "level": "INFO",
+                "level": settings.LOG_LEVEL,
                 "formatter": "standard",
                 "stream": sys.stdout
-            },
-            "file": {
-                "class": "logging.handlers.RotatingFileHandler",
-                "level": "DEBUG",
-                "formatter": "standard",
-                "filename": "logs/app.log",
-                "maxBytes": 10485760,  # 10MB
-                "backupCount": 5
-            },
-            "error_file": {
-                "class": "logging.handlers.RotatingFileHandler",
-                "level": "ERROR",
-                "formatter": "standard",
-                "filename": "logs/error.log",
-                "maxBytes": 10485760,  # 10MB
-                "backupCount": 5
             }
         },
         "loggers": {
             "domain": {
-                "level": "DEBUG",
-                "handlers": ["console", "file", "error_file"],
+                "level": settings.LOG_LEVEL,
+                "handlers": ["console"],
                 "propagate": False
             },
             "application": {
-                "level": "INFO",
-                "handlers": ["console", "file", "error_file"],
+                "level": settings.LOG_LEVEL,
+                "handlers": ["console"],
                 "propagate": False
             },
             "infrastructure": {
-                "level": "INFO",
-                "handlers": ["console", "file", "error_file"],
+                "level": settings.LOG_LEVEL,
+                "handlers": ["console"],
                 "propagate": False
             },
             "interface": {
-                "level": "INFO",
-                "handlers": ["console", "file", "error_file"],
+                "level": settings.LOG_LEVEL,
+                "handlers": ["console"],
+                "propagate": False
+            },
+            "alembic": {
+                "level": settings.LOG_LEVEL,
+                "handlers": ["console"],
+                "propagate": False
+            },
+            "alembic.runtime.migration": {
+                "level": settings.LOG_LEVEL,
+                "handlers": ["console"],
+                "propagate": False
+            },
+            "sqlalchemy": {
+                "level": settings.LOG_LEVEL,
+                "handlers": ["console"],
+                "propagate": False
+            },
+            "sqlalchemy.engine": {
+                "level": settings.LOG_LEVEL,
+                "handlers": ["console"],
                 "propagate": False
             }
         },
         "root": {
-            "level": "INFO",
-            "handlers": ["console", "file", "error_file"]
+            "level": settings.LOG_LEVEL,
+            "handlers": ["console"]
         }
     }
 
 def setup_logging():
     """Initialize logging configuration"""
+    settings = get_settings()
     config = get_logger_config()
     logging.config.dictConfig(config)
+    
+    # Force SQLAlchemy and Alembic loggers to use our formatter
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(ColorFormatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
+    console_handler.setLevel(settings.LOG_LEVEL)
+    
+    # Update SQLAlchemy loggers
+    sqlalchemy_logger = logging.getLogger("sqlalchemy.engine")
+    sqlalchemy_logger.handlers = [console_handler]
+    sqlalchemy_logger.setLevel(settings.LOG_LEVEL)
+    
+    # Update Alembic loggers
+    alembic_logger = logging.getLogger("alembic")
+    alembic_logger.handlers = [console_handler]
+    alembic_logger.setLevel(settings.LOG_LEVEL)
+    alembic_migration_logger = logging.getLogger("alembic.runtime.migration")
+    alembic_migration_logger.handlers = [console_handler]
+    alembic_migration_logger.setLevel(settings.LOG_LEVEL)
 
 def get_logger(name: str) -> logging.Logger:
     """

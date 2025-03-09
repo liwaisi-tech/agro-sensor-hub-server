@@ -2,6 +2,9 @@ from fastapi import APIRouter
 from domain.value_objects.health_check import HealthCheck
 from application.services.health.health_service import HealthService
 from fastapi import Depends
+from infrastructure.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 router = APIRouter(
     prefix="/health",
@@ -24,5 +27,7 @@ async def health_check(health_service: HealthService = Depends(HealthService)) -
     Returns:
         HealthCheck: A value object containing the health status and timestamp
     """
+    logger.info("Health check endpoint called")
     health_status = health_service.get_health()
+    logger.info(f"Health check response: {health_status}")
     return HealthCheck(status=health_status["status"]) 

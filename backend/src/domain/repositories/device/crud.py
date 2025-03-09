@@ -1,4 +1,4 @@
-from typing import Optional, TypedDict
+from typing import Optional, TypedDict, List
 
 from domain.dtos.device.dtos import DeviceCreate, DeviceResponse
 from sqlalchemy.orm import Session
@@ -23,7 +23,7 @@ class DeviceRepository:
             device_create: Device creation data transfer object
             
         Returns:
-            The created Device record
+            The created Device record as DeviceResponse
         """
         device = Device(
             mac_address=device_create.mac_address,
@@ -32,9 +32,9 @@ class DeviceRepository:
         db.add(device)
         db.commit()
         db.refresh(device)
-        return device
+        return DeviceResponse.model_validate(device)
 
-    def update(self, db: Session, device_create: DeviceCreate) -> Optional[Device]:
+    def update(self, db: Session, device_create: DeviceCreate) -> Optional[DeviceResponse]:
         """
         Update an existing device record.
         
@@ -43,16 +43,17 @@ class DeviceRepository:
             device_create: Device creation data transfer object
             
         Returns:
-            Updated Device record if found, None otherwise
+            Updated Device record as DeviceResponse if found, None otherwise
         """
         device = db.query(Device).filter(Device.mac_address == device_create.mac_address).first()
         if device:
             setattr(device, 'name', str(device_create.name))
             db.commit()
             db.refresh(device)
-        return device
+            return DeviceResponse.model_validate(device)
+        return None
 
-    def get_by_mac_address(self, db: Session, mac_address: str) -> Optional[Device]:
+    def get_by_mac_address(self, db: Session, mac_address: str) -> Optional[DeviceResponse]:
         """
         Get a device by its MAC address.
         
@@ -61,11 +62,12 @@ class DeviceRepository:
             mac_address: The MAC address of the device to retrieve
             
         Returns:
-            Device record if found, None otherwise
+            Device record as DeviceResponse if found, None otherwise
         """
-        return db.query(Device).filter(Device.mac_address == mac_address).first()
+        device = db.query(Device).filter(Device.mac_address == mac_address).first()
+        return DeviceResponse.model_validate(device) if device else None
 
-    def get_all_devices(self, db: Session) -> list[Device]:
+    def get_all_devices(self, db: Session) -> List[DeviceResponse]:
         """
         Get all devices sorted by name.
         
@@ -73,6 +75,7 @@ class DeviceRepository:
             db: Database session
             
         Returns:
-            List of Device records sorted alphabetically by name
+            List of Device records as DeviceResponse sorted alphabetically by name
         """
-        return db.query(Device).order_by(Device.name).all()
+        devices = db.query(Device).order_by(Device.name).all()
+        return [DeviceResponse.model_validate(device) for device in devices]
