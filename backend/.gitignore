@@ -601,3 +601,4 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/vs,linux,windows,macos,python
 .vscode/*
+.env.docker

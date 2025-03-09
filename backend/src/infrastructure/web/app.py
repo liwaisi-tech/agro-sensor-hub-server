@@ -14,15 +14,16 @@ def create_app() -> FastAPI:
         FastAPI: The configured FastAPI application instance
     """
     settings = get_settings()
+    prefix = settings.API_PREFIX.strip()  # Remove any trailing spaces
     logger.info("Creating FastAPI application")
     
     app = FastAPI(
         title="Agro Sensor Hub API",
         description="API for managing agricultural sensors and their data",
         version="1.0.0",
-        docs_url="/docs",  # Set Swagger UI path
-        redoc_url="/redoc",  # Set ReDoc path
-        openapi_url="/openapi.json"  # Set OpenAPI schema path
+        docs_url=f"{prefix}/docs",  # Include API prefix in Swagger UI path
+        redoc_url=f"{prefix}/redoc",  # Include API prefix in ReDoc path
+        openapi_url=f"{prefix}/openapi.json"  # Include API prefix in OpenAPI schema path
     )
     
     @app.middleware("http")
@@ -38,9 +39,9 @@ def create_app() -> FastAPI:
         )
         return response
     
-    # Include API router
-    logger.info(f"Configuring API router with prefix: {settings.API_PREFIX}")
-    app.include_router(api_router, prefix=settings.API_PREFIX)
+    # Include API router with the API prefix
+    logger.info(f"Configuring API router with prefix: {prefix}")
+    app.include_router(api_router, prefix=prefix)
     
     return app
 
