@@ -26,3 +26,10 @@ Este comando:
 - Los contenedores se reiniciarán automáticamente si el sistema se reinicia
 - Los logs se pueden ver con `docker compose logs -f`
 
+### Ejecutar solo la base de datos
+
+Si necesitas ejecutar solo la base de datos PostgreSQL:
+```bash
+docker compose up -d postgres
+```
+

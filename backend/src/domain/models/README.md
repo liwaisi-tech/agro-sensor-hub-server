@@ -41,3 +41,49 @@ The `sensor_activities` table stores sensor readings from ESP32 devices.
 ## Relationships
 
 - Both tables have a foreign key relationship with the `devices` table through the `device_id` column, which references the `mac_address` column in the devices table.
+
+## Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    Device {
+        string mac_address PK "17 chars"
+        string name "100 chars"
+        datetime created_at
+        datetime updated_at
+    }
+    
+    SensorActivity {
+        int id PK
+        string device_id FK "17 chars"
+        string zone "100 chars"
+        float env_humidity
+        float env_temperature
+        float ground_sensor_1
+        float ground_sensor_2
+        float ground_sensor_3
+        float ground_sensor_4
+        float ground_sensor_5
+        float ground_sensor_6
+        datetime created_at
+    }
+    
+    Notification {
+        int id PK
+        string device_id FK "17 chars"
+        string type "50 chars"
+        boolean is_read
+        string title "200 chars"
+        text description
+        datetime created_at
+        datetime updated_at
+    }
+
+    Device ||--o{ SensorActivity : "has many"
+    Device ||--o{ Notification : "has many"
+```
+
+The diagram above shows the relationships between the models:
+- One Device can have many SensorActivities (1:N relationship)
+- One Device can have many Notifications (1:N relationship)
+- Both SensorActivity and Notification models reference the Device through its `mac_address` as a foreign key
