@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime
 from sqlalchemy.sql import func
 
 from infrastructure.database.base import Base
@@ -8,7 +8,7 @@ class SensorActivity(Base):
     __tablename__ = 'sensor_activities'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    mac_address = Column(String(17), nullable=False, index=True)  # Format: XX:XX:XX:XX:XX:XX
+    device_id = Column(String(17), ForeignKey('devices.mac_address'), nullable=False, index=True)  # Format: XX:XX:XX:XX:XX:XX
     zone = Column(String(100), nullable=True)
     env_humidity = Column(Float, nullable=True)
     env_temperature = Column(Float, nullable=True)
