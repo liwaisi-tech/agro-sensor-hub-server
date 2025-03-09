@@ -1,81 +1,130 @@
-from typing import List, Optional, TypedDict
-from sqlalchemy.orm import Session
+from typing import Optional, List
 from sqlalchemy import desc
+from sqlalchemy.orm import Session
 
 from domain.models.notification import Notification
-
-class CreateNotificationParams(TypedDict):
-    """Parameters for creating a notification."""
-    notification_type: str
-    title: str
-    description: Optional[str]
-
-class PaginationParams(TypedDict):
-    """Parameters for pagination."""
-    skip: int
-    limit: int
+from domain.dtos.notification.dtos import NotificationCreate, NotificationResponse
 
 class NotificationRepository:
-    """Repository for handling Notification CRUD operations."""
+    def __init__(self):
+        pass
 
-    def __init__(self, db: Session):
-        self.db = db
-
-    def create(self, params: CreateNotificationParams) -> Notification:
+    def create(
+        self,
+        db: Session,
+        notification_create: NotificationCreate
+    ) -> NotificationResponse:
         """
         Create a new notification.
         
         Args:
-            params (CreateNotificationParams): Parameters for creating notification
-                notification_type (str): Type of the notification
-                title (str): Title of the notification
-                description (Optional[str]): Description of the notification
+            db: Database session
+            notification_create: Notification creation data transfer object
             
         Returns:
-            Notification: Created notification instance
+            The created Notification record as NotificationResponse
         """
         notification = Notification(
-            notification_type=params['notification_type'],
-            title=params['title'],
-            description=params.get('description'),
+            device_id=notification_create.device_id,
+            type=notification_create.type,
+            title=notification_create.title,
+            description=notification_create.description,
             is_read=False
         )
-        self.db.add(notification)
-        self.db.commit()
-        self.db.refresh(notification)
-        return notification
+        db.add(notification)
+        db.commit()
+        db.refresh(notification)
+        return NotificationResponse.model_validate(notification)
 
-    def get_paginated_list(self, params: PaginationParams) -> List[Notification]:
+    def get_latest_unread(self, db: Session, limit: int = 20) -> List[NotificationResponse]:
         """
-        Get paginated list of notifications sorted by created_at in descending order.
+        Get the latest unread notifications.
         
         Args:
-            params (PaginationParams): Pagination parameters
-                skip (int): Number of records to skip (offset)
-                limit (int): Maximum number of records to return
+            db: Database session
+            limit: Maximum number of records to return (default 20)
             
         Returns:
-            List[Notification]: List of notifications
+            List of unread Notification records as NotificationResponse
         """
-        return self.db.query(Notification)\
+        notifications = db.query(Notification)\
+            .filter(Notification.is_read == False)\
             .order_by(desc(Notification.created_at))\
-            .offset(params['skip'])\
-            .limit(params['limit'])\
+            .limit(limit)\
             .all()
+        return [NotificationResponse.model_validate(notification) for notification in notifications]
 
-    def update_read_status(self, notification_id: int) -> Optional[Notification]:
+    def get_paginated(
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 10
+    ) -> List[NotificationResponse]:
         """
-        Update the read status of a notification to True.
+        Get a paginated list of notifications sorted by creation date.
         
         Args:
-            notification_id (int): ID of the notification to update
+            db: Database session
+            skip: Number of records to skip (offset)
+            limit: Maximum number of records to return
             
         Returns:
-            Optional[Notification]: Updated notification instance or None if not found
+            List of Notification records as NotificationResponse
         """
-        notification = self.db.query(Notification).filter(Notification.id == notification_id).first()
+        notifications = db.query(Notification)\
+            .order_by(desc(Notification.created_at))\
+            .offset(skip)\
+            .limit(limit)\
+            .all()
+        return [NotificationResponse.model_validate(notification) for notification in notifications]
+
+    def update_read_status(self, db: Session, notification_id: int, is_read: bool = True) -> Optional[NotificationResponse]:
+        """
+        Update the read status of a notification.
+        
+        Args:
+            db: Database session
+            notification_id: The ID of the notification
+            is_read: The new read status (default True)
+            
+        Returns:
+            Updated Notification record as NotificationResponse if found, None otherwise
+        """
+        notification = db.query(Notification)\
+            .filter(Notification.id == notification_id)\
+            .first()
+            
         if notification:
-            setattr(notification, 'is_read', True)
-            self.db.commit()
-            self.db.refresh(notification)
-        return notification
+            setattr(notification, 'is_read', is_read)
+            db.commit()
+            db.refresh(notification)
+            return NotificationResponse.model_validate(notification)
+            
+        return None
+
+    def get_by_mac_address(
+        self,
+        db: Session,
+        mac_address: str,
+        skip: int = 0,
+        limit: int = 10
+    ) -> List[NotificationResponse]:
+        """
+        Get paginated notifications for a specific MAC address.
+        
+        Args:
+            db: Database session
+            mac_address: The MAC address of the device
+            skip: Number of records to skip (offset)
+            limit: Maximum number of records to return
+            
+        Returns:
+            List of Notification records as NotificationResponse for the specified MAC address
+        """
+        notifications = db.query(Notification)\
+            .filter(Notification.device_id == mac_address)\
+            .order_by(desc(Notification.created_at))\
+            .offset(skip)\
+            .limit(limit)\
+            .all()
+        return [NotificationResponse.model_validate(notification) for notification in notifications]
