@@ -1,5 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 
 from infrastructure.database.base import Base
 
@@ -19,3 +20,6 @@ class SensorActivity(Base):
     ground_sensor_5 = Column(Float, nullable=True)
     ground_sensor_6 = Column(Float, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationship to Device model
+    device = relationship("Device", back_populates="sensor_activities")

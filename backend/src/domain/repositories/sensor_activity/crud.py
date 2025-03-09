@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, List, TypedDict
 
 from sqlalchemy import desc
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from domain.models.sensor_activity import SensorActivity
 
@@ -41,10 +41,10 @@ class SensorActivityRepository:
                 ground_sensor_6: Ground sensor 6 reading
             
         Returns:
-            The created SensorActivity record
+            The created SensorActivity record with device information
         """
         activity = SensorActivity(
-            mac_address=activity_data['mac_address'],
+            device_id=activity_data['mac_address'],
             zone=activity_data['zone'],
             env_humidity=activity_data['env_humidity'],
             env_temperature=activity_data['env_temperature'],
@@ -58,7 +58,12 @@ class SensorActivityRepository:
         self.db.add(activity)
         self.db.commit()
         self.db.refresh(activity)
-        return activity
+        
+        # Reload the activity with device information
+        return self.db.query(SensorActivity)\
+            .options(joinedload(SensorActivity.device))\
+            .filter(SensorActivity.id == activity.id)\
+            .first()
 
     def get_filtered_list(
         self,
@@ -77,9 +82,10 @@ class SensorActivityRepository:
             end_date: Optional end date filter
             
         Returns:
-            List of SensorActivity records
+            List of SensorActivity records with device information
         """
-        query = self.db.query(SensorActivity)
+        query = self.db.query(SensorActivity)\
+            .options(joinedload(SensorActivity.device))
         
         if start_date:
             query = query.filter(SensorActivity.created_at >= start_date)
@@ -96,9 +102,12 @@ class SensorActivityRepository:
             activity_id: The ID of the sensor activity record
             
         Returns:
-            SensorActivity record if found, None otherwise
+            SensorActivity record with device information if found, None otherwise
         """
-        return self.db.query(SensorActivity).filter(SensorActivity.id == activity_id).first()
+        return self.db.query(SensorActivity)\
+            .options(joinedload(SensorActivity.device))\
+            .filter(SensorActivity.id == activity_id)\
+            .first()
 
     def get_latest_by_mac_address(self, mac_address: str) -> Optional[SensorActivity]:
         """
@@ -108,11 +117,12 @@ class SensorActivityRepository:
             mac_address: The MAC address of the sensor
             
         Returns:
-            Most recent SensorActivity record for the MAC address if found, None otherwise
+            Most recent SensorActivity record with device information for the MAC address if found, None otherwise
         """
         return (
             self.db.query(SensorActivity)
-            .filter(SensorActivity.mac_address == mac_address)
+            .options(joinedload(SensorActivity.device))
+            .filter(SensorActivity.device_id == mac_address)
             .order_by(desc(SensorActivity.created_at))
             .first()
         )
