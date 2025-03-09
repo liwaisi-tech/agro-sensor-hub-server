@@ -5,6 +5,10 @@ import os
 from pathlib import Path
 from infrastructure.web import start_server
 from infrastructure.logging_config import setup_logging, get_logger
+from infrastructure.config.settings import get_settings
+
+# Change to the project root directory
+os.chdir(Path(__file__).parent.parent)
 
 # Initialize logging
 setup_logging()
@@ -28,6 +32,17 @@ def run_migrations():
         env["PYTHONPATH"] = str(Path(__file__).parent.parent)  # Set PYTHONPATH to include our src directory
         env["ALEMBIC_LOG_FORMAT"] = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
         env["ALEMBIC_LOG_LEVEL"] = "INFO"
+        
+        # Ensure settings are loaded before migrations
+        settings = get_settings()
+        env.update({
+            "POSTGRES_USER": settings.POSTGRES_USER,
+            "POSTGRES_PASSWORD": settings.POSTGRES_PASSWORD,
+            "POSTGRES_HOST": settings.POSTGRES_HOST,
+            "POSTGRES_PORT": str(settings.POSTGRES_PORT),
+            "POSTGRES_DB": settings.POSTGRES_DB,
+            "DATABASE_URL": settings.DATABASE_URL
+        })
         
         subprocess.run(
             ["alembic", "upgrade", "head"],
