@@ -37,6 +37,21 @@ services:
     networks:
       - agro_sensor_network
 
+  frontend:
+    build:
+      context: ./frontend/agro-sensor-hub-webapp
+      dockerfile: Dockerfile
+    container_name: agro_sensor_hub_frontend
+    environment:
+      - VITE_API_URL=http://localhost:${PORT}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - agro_sensor_network
+
 networks:
   agro_sensor_network:
     driver: bridge
