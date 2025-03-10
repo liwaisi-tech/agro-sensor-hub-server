@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from interface.api import api_router
 from infrastructure.config.settings import get_settings
 from infrastructure.logging_config import get_logger
@@ -25,6 +26,15 @@ def create_app() -> FastAPI:
         docs_url=f"{prefix}/docs",  # Include API prefix in Swagger UI path
         redoc_url=f"{prefix}/redoc",  # Include API prefix in ReDoc path
         openapi_url=f"{prefix}/openapi.json",  # Include API prefix in OpenAPI schema path
+    )
+
+    # Configure CORS
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173", "http://0.0.0.0:5173"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     @app.middleware("http")

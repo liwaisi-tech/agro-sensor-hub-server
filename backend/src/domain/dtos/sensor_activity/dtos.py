@@ -185,6 +185,11 @@ class SensorActivityListResponse(BaseModel):
         le=100,
         examples=[65.0],
     )
+    latest_reading: datetime = Field(
+        title="Latest Reading",
+        description="Timestamp of the latest reading",
+        examples=["2024-03-09T14:11:36.387495Z"],
+    )
     planting_boxes: list[PlantingBox] = Field(
         title="Planting Boxes",
         description="List of planting boxes in the zone",
@@ -206,6 +211,7 @@ class SensorActivityListResponse(BaseModel):
                 "mac_address": "00:1B:44:11:3A:B7",
                 "name": "Zona 1",
                 "status": "active",
+                "latest_reading": "2024-03-09T14:11:36.387495Z",
                 "environment_temperature": 24.5,
                 "environment_humidity": 65.0,
                 "planting_boxes": [

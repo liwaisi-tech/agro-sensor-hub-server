@@ -1,7 +1,8 @@
-from datetime import datetime
-from typing import Optional, List, Tuple
+from datetime import datetime, timedelta
+from typing import Optional, List
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from datetime import timezone
 
 from domain.repositories.sensor_activity.crud import SensorActivityRepository
 from domain.dtos.sensor_activity.dtos import (
@@ -208,12 +209,20 @@ class SensorActivityService:
         """
         latest_activities = self.repository.get_latest_for_all_devices(db)
         result: List[SensorActivityListResponse] = []
+        current_time = datetime.now(timezone.utc)
+        ten_minutes = timedelta(minutes=10)
+
         for activity in latest_activities:
+            # Check if the latest reading is more than 10 minutes old
+            is_active = (current_time - activity.created_at) <= ten_minutes
+            status = "active" if is_active else "inactive"
+
             result.append(
                 SensorActivityListResponse(
                     mac_address=activity.mac_address,
                     name=str(activity.zone or activity.mac_address),
-                    status="active",
+                    status=status,
+                    latest_reading=activity.created_at,
                     environment_temperature=float(activity.env_temperature or 0),
                     environment_humidity=float(activity.env_humidity or 0),
                     planting_boxes=[

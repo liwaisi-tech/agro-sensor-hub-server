@@ -10,9 +10,10 @@ interface ZoneProps {
     status: 'active' | 'inactive';
   }[];
   onZoneClick: () => void;
+  latestLecture: string; // ISO timestamp
 }
 
-export function Zone({ id, boxes, onZoneClick }: ZoneProps) {
+export function Zone({ id, boxes, onZoneClick, latestLecture }: ZoneProps) {
   return (
     <div 
       className="bg-white dark:bg-gray-700 rounded-lg shadow p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -28,6 +29,9 @@ export function Zone({ id, boxes, onZoneClick }: ZoneProps) {
           <CgDetailsMore size={24} />
         </button>
       </div>
+      <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        Última lectura: {new Date(latestLecture).toLocaleString('es-CO')}
+      </div>
       <div 
         className="grid grid-cols-2 gap-4"
       >
@@ -39,7 +43,7 @@ export function Zone({ id, boxes, onZoneClick }: ZoneProps) {
             groundHumidity={box.groundHumidity}
             envHumidity={box.envHumidity}
             status={box.status}
-            lastUpdate={new Date()}
+            lastUpdate={new Date(latestLecture)}
           />
         ))}
       </div>
