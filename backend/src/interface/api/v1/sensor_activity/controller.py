@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from domain.dtos.sensor_activity.dtos import (
     SensorActivityCreate,
+    SensorActivityListResponse,
     SensorActivityResponse,
 )
 from application.services.sensor_activity.services import SensorActivityService
@@ -191,5 +192,25 @@ async def get_latest_sensor_activity(
     """
     logger.info(f"Retrieving latest sensor activity for device: {mac_address}")
     response = sensor_activity_service.get_latest_by_mac_address(db, mac_address)
+    logger.info(f"Latest sensor activity retrieved successfully: {response}")
+    return response
+
+
+@router.get(
+    "/all/latest",
+    response_model=List[SensorActivityListResponse],
+    summary="Get latest sensor activity for all devices",
+)
+async def get_latest_sensor_activity_for_all_devices(
+    db: Session = Depends(get_db),
+    sensor_activity_service: SensorActivityService = Depends(
+        get_sensor_activity_service
+    ),
+) -> List[SensorActivityListResponse]:
+    """
+    Retrieves the latest sensor activity for all devices.
+    """
+    logger.info("Retrieving latest sensor activity for all devices")
+    response = sensor_activity_service.get_latest_for_all_devices(db)
     logger.info(f"Latest sensor activity retrieved successfully: {response}")
     return response

@@ -139,3 +139,82 @@ class SensorActivityResponse(BaseModel):
                 "created_at": "2024-03-09T14:11:36.387495Z",
             }
         }
+
+
+class PlantingBox(BaseModel):
+    """Pydantic model for planting box data."""
+
+    name: str = Field(
+        title="Name", description="Name of the planting box", examples=["Cajón 1"]
+    )
+    ground_humidity: float = Field(
+        title="Ground Humidity",
+        description="Ground humidity reading",
+        ge=0,
+        le=100,
+        examples=[72.5],
+    )
+
+    class Config:
+        json_schema_extra = {"example": {"name": "Cajón 1", "ground_humidity": 72.5}}
+
+
+class SensorActivityListResponse(BaseModel):
+    """Pydantic model for listing Sensor Activity responses."""
+
+    mac_address: Annotated[
+        str, StringConstraints(pattern=r"^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
+    ] = Field(
+        title="MAC Address",
+        description="Device MAC address in format XX:XX:XX:XX:XX:XX",
+        examples=["00:1B:44:11:3A:B7"],
+    )
+    name: str = Field(title="Name", description="Name of the zone", examples=["Zona 1"])
+    status: str = Field(
+        title="Status", description="Status of the zone", examples=["active"]
+    )
+    environment_temperature: float = Field(
+        title="Environment Temperature",
+        description="Environmental temperature reading in Celsius",
+        examples=[24.5],
+    )
+    environment_humidity: float = Field(
+        title="Environment Humidity",
+        description="Environmental humidity reading",
+        ge=0,
+        le=100,
+        examples=[65.0],
+    )
+    planting_boxes: list[PlantingBox] = Field(
+        title="Planting Boxes",
+        description="List of planting boxes in the zone",
+        examples=[
+            [
+                {"name": "Cajón 1", "ground_humidity": 72.5},
+                {"name": "Cajón 2", "ground_humidity": 68.3},
+                {"name": "Cajón 3", "ground_humidity": 75.1},
+                {"name": "Cajón 4", "ground_humidity": 0},
+                {"name": "Cajón 5", "ground_humidity": 0},
+                {"name": "Cajón 6", "ground_humidity": 0},
+            ]
+        ],
+    )
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "mac_address": "00:1B:44:11:3A:B7",
+                "name": "Zona 1",
+                "status": "active",
+                "environment_temperature": 24.5,
+                "environment_humidity": 65.0,
+                "planting_boxes": [
+                    {"name": "Cajón 1", "ground_humidity": 72.5},
+                    {"name": "Cajón 2", "ground_humidity": 68.3},
+                    {"name": "Cajón 3", "ground_humidity": 75.1},
+                    {"name": "Cajón 4", "ground_humidity": 0},
+                    {"name": "Cajón 5", "ground_humidity": 0},
+                    {"name": "Cajón 6", "ground_humidity": 0},
+                ],
+            }
+        }
