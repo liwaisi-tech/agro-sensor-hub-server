@@ -43,7 +43,7 @@ services:
       dockerfile: Dockerfile
     container_name: agro_sensor_hub_frontend
     environment:
-      - VITE_API_URL=http://localhost:${PORT}
+      - VITE_API_URL=/agro-sensor-hub/api/v1
     ports:
       - "3000:3000"
     depends_on:

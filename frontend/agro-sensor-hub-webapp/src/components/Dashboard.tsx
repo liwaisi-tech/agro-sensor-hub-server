@@ -19,7 +19,7 @@ export function Dashboard() {
         const data = await zonesService.getAllZones();
         setZones(data);
       } catch (err) {
-        setError('No se pudieron cargar las zonas');
+        setError(`No se pudieron cargar las zonas: ${err}`);
         console.error('Error loading zones:', err);
       } finally {
         setIsLoading(false);

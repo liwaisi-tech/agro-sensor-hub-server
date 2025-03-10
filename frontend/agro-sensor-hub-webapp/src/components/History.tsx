@@ -1,25 +1,8 @@
 import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-
-interface SensorActivity {
-  id: number;
-  device_id: string;
-  zone: string;
-  env_humidity: number;
-  env_temperature: number;
-  ground_sensor_1: number;
-  ground_sensor_2: number;
-  ground_sensor_3: number;
-  ground_sensor_4: number;
-  ground_sensor_5: number;
-  ground_sensor_6: number;
-  created_at: string;
-}
-
-interface ApiError {
-  detail: string;
-}
+import { SensorActivity } from '../types/sensorActivity';
+import { sensorActivitiesService } from '../services/sensorActivitiesService';
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 50, 100];
 
@@ -38,46 +21,23 @@ export function History() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        let url = `http://localhost:8080/agro-sensor-hub/api/v1/sensor-activities?skip=${currentPage * itemsPerPage}&limit=${itemsPerPage + 1}`;
-        
-        // Add date filters if they exist
-        if (startDate) {
-          url += `&start_date=${startDate.toISOString()}`;
-        }
-        if (endDate) {
-          url += `&end_date=${endDate.toISOString()}`;
-        }
-
-        const response = await fetch(url, {
-          headers: {
-            'accept': 'application/json'
-          }
+        const result = await sensorActivitiesService.getActivities({
+          currentPage,
+          itemsPerPage,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined
         });
         
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error((data as ApiError).detail || 'Network response was not ok');
-        }
-
-        // Check if the response is an array (success case)
-        if (Array.isArray(data)) {
-          setHasNextPage(data.length > itemsPerPage);
-          setActivities(data.slice(0, itemsPerPage));
-          setError(null);
-        } else {
-          // If we get here, something unexpected happened
-          setActivities([]);
-          setHasNextPage(false);
-          setError('No se encontraron datos para los filtros seleccionados');
-        }
+        setActivities(result.activities);
+        setHasNextPage(result.hasNextPage);
+        setError(null);
       } catch (err) {
         setActivities([]);
         setHasNextPage(false);
-        if (err instanceof Error && err.message === 'No sensor activities found') {
-          setError('No se encontraron datos para los filtros seleccionados');
+        if (err instanceof Error) {
+          setError(err.message);
         } else {
-          setError((err as Error).message);
+          setError('An unexpected error occurred');
         }
       } finally {
         setIsLoading(false);
