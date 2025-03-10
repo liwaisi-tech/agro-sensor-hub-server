@@ -2,6 +2,7 @@ from infrastructure.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+
 class HealthService:
     def __init__(self):
         pass
@@ -9,7 +10,7 @@ class HealthService:
     def get_health(self):
         """
         Get the health status of the system.
-        
+
         Returns:
             dict: A dictionary containing the health status
         """

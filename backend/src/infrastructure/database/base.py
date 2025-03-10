@@ -4,7 +4,6 @@ from sqlalchemy import create_engine
 from infrastructure.config.settings import get_settings
 
 settings = get_settings()
-
 # Create database engine
 engine = create_engine(settings.DATABASE_URL)
 
@@ -14,6 +13,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Create declarative base
 Base = declarative_base()
 
+
 def get_db():
     """
     Get database session.
@@ -22,4 +22,4 @@ def get_db():
     try:
         yield db
     finally:
-        db.close() 
+        db.close()
