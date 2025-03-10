@@ -39,7 +39,7 @@ export function PlantingBox({
     <div className={`w-38 h-38 rounded-lg p-4 ${
       status === "active" 
         ? 'bg-green-500 dark:bg-green-600' 
-        : 'bg-gray-200 dark:bg-gray-700'
+        : 'bg-red-500 dark:bg-red-600'
     } text-white shadow-md flex flex-col justify-between`}>
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-semibold text-white/90">{name}</h3>

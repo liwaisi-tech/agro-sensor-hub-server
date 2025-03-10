@@ -133,3 +133,17 @@ class SensorActivityRepository:
             .first()
         )
         return SensorActivityResponse.model_validate(activity) if activity else None
+
+    def get_latest_for_all_devices(self, db: Session) -> List[SensorActivityResponse]:
+        """
+        Get the latest sensor activity record for all devices.
+        """
+        activities = (
+            db.query(SensorActivity)
+            .options(joinedload(SensorActivity.device))
+            .order_by(desc(SensorActivity.created_at))
+            .all()
+        )
+        return [
+            SensorActivityResponse.model_validate(activity) for activity in activities
+        ]

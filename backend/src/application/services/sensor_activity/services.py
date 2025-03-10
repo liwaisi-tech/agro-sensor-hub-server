@@ -1,11 +1,14 @@
-from datetime import datetime
-from typing import Optional, List, Tuple
+from datetime import datetime, timedelta
+from typing import Optional, List
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from datetime import timezone
 
 from domain.repositories.sensor_activity.crud import SensorActivityRepository
 from domain.dtos.sensor_activity.dtos import (
+    PlantingBox,
     SensorActivityCreate,
+    SensorActivityListResponse,
     SensorActivityResponse,
 )
 from application.services.device.services import DeviceService
@@ -197,3 +200,57 @@ class SensorActivityService:
                 status_code=500,
                 detail=f"Error retrieving latest sensor activity: {str(e)}",
             )
+
+    def get_latest_for_all_devices(
+        self, db: Session
+    ) -> List[SensorActivityListResponse]:
+        """
+        Get the latest sensor activity record for all devices.
+        """
+        latest_activities = self.repository.get_latest_for_all_devices(db)
+        result: List[SensorActivityListResponse] = []
+        current_time = datetime.now(timezone.utc)
+        ten_minutes = timedelta(minutes=10)
+
+        for activity in latest_activities:
+            # Check if the latest reading is more than 10 minutes old
+            is_active = (current_time - activity.created_at) <= ten_minutes
+            status = "active" if is_active else "inactive"
+
+            result.append(
+                SensorActivityListResponse(
+                    mac_address=activity.mac_address,
+                    name=str(activity.zone or activity.mac_address),
+                    status=status,
+                    latest_reading=activity.created_at,
+                    environment_temperature=float(activity.env_temperature or 0),
+                    environment_humidity=float(activity.env_humidity or 0),
+                    planting_boxes=[
+                        PlantingBox(
+                            name="Cajón 1",
+                            ground_humidity=float(activity.ground_sensor_1 or 0),
+                        ),
+                        PlantingBox(
+                            name="Cajón 2",
+                            ground_humidity=float(activity.ground_sensor_2 or 0),
+                        ),
+                        PlantingBox(
+                            name="Cajón 3",
+                            ground_humidity=float(activity.ground_sensor_3 or 0),
+                        ),
+                        PlantingBox(
+                            name="Cajón 4",
+                            ground_humidity=float(activity.ground_sensor_4 or 0),
+                        ),
+                        PlantingBox(
+                            name="Cajón 5",
+                            ground_humidity=float(activity.ground_sensor_5 or 0),
+                        ),
+                        PlantingBox(
+                            name="Cajón 6",
+                            ground_humidity=float(activity.ground_sensor_6 or 0),
+                        ),
+                    ],
+                )
+            )
+        return result
