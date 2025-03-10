@@ -6,26 +6,27 @@ import time
 
 logger = get_logger(__name__)
 
+
 def create_app() -> FastAPI:
     """
     Creates and configures the FastAPI application.
-    
+
     Returns:
         FastAPI: The configured FastAPI application instance
     """
     settings = get_settings()
     prefix = settings.API_PREFIX.strip()  # Remove any trailing spaces
     logger.info("Creating FastAPI application")
-    
+
     app = FastAPI(
         title="Agro Sensor Hub API",
         description="API for managing agricultural sensors and their data",
         version="1.0.0",
         docs_url=f"{prefix}/docs",  # Include API prefix in Swagger UI path
         redoc_url=f"{prefix}/redoc",  # Include API prefix in ReDoc path
-        openapi_url=f"{prefix}/openapi.json"  # Include API prefix in OpenAPI schema path
+        openapi_url=f"{prefix}/openapi.json",  # Include API prefix in OpenAPI schema path
     )
-    
+
     @app.middleware("http")
     async def log_requests(request: Request, call_next):
         """Log all requests with their processing time."""
@@ -38,12 +39,13 @@ def create_app() -> FastAPI:
             f"Process Time: {process_time:.2f}ms"
         )
         return response
-    
+
     # Include API router with the API prefix
     logger.info(f"Configuring API router with prefix: {prefix}")
     app.include_router(api_router, prefix=prefix)
-    
+
     return app
+
 
 # Create the application instance
 app = create_app()
