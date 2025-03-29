@@ -228,27 +228,19 @@ class SensorActivityService:
                     planting_boxes=[
                         PlantingBox(
                             name="Cajón 1",
-                            ground_humidity=float(activity.ground_sensor_1 or 0),
+                            ground_humidity=max(0, float(activity.ground_sensor_1 or 0)),
                         ),
                         PlantingBox(
                             name="Cajón 2",
-                            ground_humidity=float(activity.ground_sensor_2 or 0),
+                            ground_humidity=max(0, float(activity.ground_sensor_2 or 0)),
                         ),
                         PlantingBox(
                             name="Cajón 3",
-                            ground_humidity=float(activity.ground_sensor_3 or 0),
+                            ground_humidity=max(0, float(activity.ground_sensor_3 or 0)),
                         ),
                         PlantingBox(
                             name="Cajón 4",
-                            ground_humidity=float(activity.ground_sensor_4 or 0),
-                        ),
-                        PlantingBox(
-                            name="Cajón 5",
-                            ground_humidity=float(activity.ground_sensor_5 or 0),
-                        ),
-                        PlantingBox(
-                            name="Cajón 6",
-                            ground_humidity=float(activity.ground_sensor_6 or 0),
+                            ground_humidity=max(0, float(activity.ground_sensor_4 or 0)),
                         ),
                     ],
                 )

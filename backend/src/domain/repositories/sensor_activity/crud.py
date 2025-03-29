@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session, joinedload
 
 from domain.models.sensor_activity import SensorActivity
@@ -136,11 +136,28 @@ class SensorActivityRepository:
 
     def get_latest_for_all_devices(self, db: Session) -> List[SensorActivityResponse]:
         """
-        Get the latest sensor activity record for all devices.
+        Get the latest sensor activity record for each unique device.
+        Returns only one record per device (the most recent one).
         """
+        # Subquery to get the latest record ID for each device
+        latest_ids = (
+            db.query(
+                SensorActivity.device_id,
+                func.max(SensorActivity.id).label('latest_id')
+            )
+            .group_by(SensorActivity.device_id)
+            .subquery()
+        )
+
+        # Main query joining with the subquery to get the full records
         activities = (
             db.query(SensorActivity)
             .options(joinedload(SensorActivity.device))
+            .join(
+                latest_ids,
+                SensorActivity.device_id == latest_ids.c.device_id
+            )
+            .filter(SensorActivity.id == latest_ids.c.latest_id)
             .order_by(desc(SensorActivity.created_at))
             .all()
         )

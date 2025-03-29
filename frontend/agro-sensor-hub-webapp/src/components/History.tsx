@@ -144,7 +144,16 @@ export function History() {
                 </label>
                 <DatePicker
                   selected={endDate}
-                  onChange={(date: Date | null) => setEndDate(date)}
+                  onChange={(date: Date | null) => {
+                    if (date) {
+                      // Set time to 23:59:59 for the end date
+                      const endOfDay = new Date(date);
+                      endOfDay.setHours(23, 59, 59, 999);
+                      setEndDate(endOfDay);
+                    } else {
+                      setEndDate(null);
+                    }
+                  }}
                   selectsEnd
                   startDate={startDate}
                   endDate={endDate}
@@ -186,8 +195,6 @@ export function History() {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sensor Tierra 2</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sensor Tierra 3</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sensor Tierra 4</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sensor Tierra 5</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sensor Tierra 6</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
                 </tr>
               </thead>
@@ -203,8 +210,6 @@ export function History() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{activity.ground_sensor_2 === 0 ? '-' : `${activity.ground_sensor_2}%`}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{activity.ground_sensor_3 === 0 ? '-' : `${activity.ground_sensor_3}%`}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{activity.ground_sensor_4 === 0 ? '-' : `${activity.ground_sensor_4}%`}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{activity.ground_sensor_5 === 0 ? '-' : `${activity.ground_sensor_5}%`}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{activity.ground_sensor_6 === 0 ? '-' : `${activity.ground_sensor_6}%`}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                       {new Date(activity.created_at).toLocaleString('es-CO')}
                     </td>
