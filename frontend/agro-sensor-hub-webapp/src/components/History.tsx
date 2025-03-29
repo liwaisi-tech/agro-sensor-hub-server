@@ -144,7 +144,16 @@ export function History() {
                 </label>
                 <DatePicker
                   selected={endDate}
-                  onChange={(date: Date | null) => setEndDate(date)}
+                  onChange={(date: Date | null) => {
+                    if (date) {
+                      // Set time to 23:59:59 for the end date
+                      const endOfDay = new Date(date);
+                      endOfDay.setHours(23, 59, 59, 999);
+                      setEndDate(endOfDay);
+                    } else {
+                      setEndDate(null);
+                    }
+                  }}
                   selectsEnd
                   startDate={startDate}
                   endDate={endDate}
