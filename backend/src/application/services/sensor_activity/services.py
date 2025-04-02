@@ -223,24 +223,24 @@ class SensorActivityService:
                     name=str(activity.zone or activity.mac_address),
                     status=status,
                     latest_reading=activity.created_at,
-                    environment_temperature=float(activity.env_temperature or 0),
-                    environment_humidity=float(activity.env_humidity or 0),
+                    environment_temperature=round(float(activity.env_temperature or 0), 2),
+                    environment_humidity=round(float(activity.env_humidity or 0), 2),
                     planting_boxes=[
                         PlantingBox(
                             name="Cajón 1",
-                            ground_humidity=max(0, float(activity.ground_sensor_1 or 0)),
+                            ground_humidity=round(max(0, float(activity.ground_sensor_1 or 0)), 2),
                         ),
                         PlantingBox(
                             name="Cajón 2",
-                            ground_humidity=max(0, float(activity.ground_sensor_2 or 0)),
+                            ground_humidity=round(max(0, float(activity.ground_sensor_2 or 0)), 2),
                         ),
                         PlantingBox(
                             name="Cajón 3",
-                            ground_humidity=max(0, float(activity.ground_sensor_3 or 0)),
+                            ground_humidity=round(max(0, float(activity.ground_sensor_3 or 0)), 2),
                         ),
                         PlantingBox(
                             name="Cajón 4",
-                            ground_humidity=max(0, float(activity.ground_sensor_4 or 0)),
+                            ground_humidity=round(max(0, float(activity.ground_sensor_4 or 0)), 2),
                         ),
                     ],
                 )
