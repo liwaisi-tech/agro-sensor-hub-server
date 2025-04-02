@@ -3,6 +3,7 @@ import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { SensorActivity } from '../types/sensorActivity';
 import { sensorActivitiesService } from '../services/sensorActivitiesService';
+import { CgArrowDownO } from 'react-icons/cg';
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 50, 100];
 
@@ -16,6 +17,7 @@ export function History() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,6 +62,21 @@ export function History() {
 
   const toggleFilters = () => {
     setIsFilterVisible(!isFilterVisible);
+  };
+
+  const handleDownloadLastThreeMonths = async () => {
+    try {
+      setIsDownloading(true);
+      await sensorActivitiesService.downloadLastThreeMonths();
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Error al descargar los datos');
+      }
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   if (isLoading) {
@@ -241,6 +258,21 @@ export function History() {
           </div>
         </>
       )}
+      {/* Floating download button */}
+      <div className="fixed bottom-5 right-1 z-10">
+        <button
+          onClick={handleDownloadLastThreeMonths}
+          disabled={isDownloading}
+          className="flex items-center justify-center w-12 h-12 text-sm font-medium text-white bg-blue-600 dark:bg-blue-700 ring-blue-700 dark:ring-black hover:bg-blue-500 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-black rounded-full shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+          title="Descargar últimos 3 meses"
+        >
+          {isDownloading ? (
+            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+          ) : (
+            <CgArrowDownO className="h-5 w-5" />
+          )}
+        </button>
+      </div>
     </main>
   );
 }
