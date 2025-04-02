@@ -130,12 +130,12 @@ class SensorActivityResponse(BaseModel):
                 "zone": "Zone A",
                 "env_humidity": 65.5,
                 "env_temperature": 25.3,
-                "ground_sensor_1": 500,
-                "ground_sensor_2": 520,
-                "ground_sensor_3": 480,
-                "ground_sensor_4": 510,
-                "ground_sensor_5": 490,
-                "ground_sensor_6": 505,
+                "ground_sensor_1": 65.6,
+                "ground_sensor_2": 65.6,
+                "ground_sensor_3": 65.6,
+                "ground_sensor_4": 65.6,
+                "ground_sensor_5": 65.6,
+                "ground_sensor_6": 65.6,
                 "created_at": "2024-03-09T14:11:36.387495Z",
             }
         }

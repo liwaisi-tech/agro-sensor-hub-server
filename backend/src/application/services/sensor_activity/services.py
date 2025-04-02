@@ -132,6 +132,26 @@ class SensorActivityService:
                 raise HTTPException(
                     status_code=404, detail="No sensor activities found"
                 )
+
+            # Round float values to 2 decimal places
+            for activity in activities:
+                if activity.env_humidity is not None:
+                    activity.env_humidity = round(activity.env_humidity, 2)
+                if activity.env_temperature is not None:
+                    activity.env_temperature = round(activity.env_temperature, 2)
+                if activity.ground_sensor_1 is not None:
+                    activity.ground_sensor_1 = round(activity.ground_sensor_1, 2)
+                if activity.ground_sensor_2 is not None:
+                    activity.ground_sensor_2 = round(activity.ground_sensor_2, 2)
+                if activity.ground_sensor_3 is not None:
+                    activity.ground_sensor_3 = round(activity.ground_sensor_3, 2)
+                if activity.ground_sensor_4 is not None:
+                    activity.ground_sensor_4 = round(activity.ground_sensor_4, 2)
+                if activity.ground_sensor_5 is not None:
+                    activity.ground_sensor_5 = round(activity.ground_sensor_5, 2)
+                if activity.ground_sensor_6 is not None:
+                    activity.ground_sensor_6 = round(activity.ground_sensor_6, 2)
+
             return activities
         except HTTPException as he:
             raise he
@@ -161,6 +181,25 @@ class SensorActivityService:
                     status_code=404,
                     detail=f"Sensor activity with id {activity_id} not found",
                 )
+
+            # Round float values to 2 decimal places
+            if activity.env_humidity is not None:
+                activity.env_humidity = round(activity.env_humidity, 2)
+            if activity.env_temperature is not None:
+                activity.env_temperature = round(activity.env_temperature, 2)
+            if activity.ground_sensor_1 is not None:
+                activity.ground_sensor_1 = round(activity.ground_sensor_1, 2)
+            if activity.ground_sensor_2 is not None:
+                activity.ground_sensor_2 = round(activity.ground_sensor_2, 2)
+            if activity.ground_sensor_3 is not None:
+                activity.ground_sensor_3 = round(activity.ground_sensor_3, 2)
+            if activity.ground_sensor_4 is not None:
+                activity.ground_sensor_4 = round(activity.ground_sensor_4, 2)
+            if activity.ground_sensor_5 is not None:
+                activity.ground_sensor_5 = round(activity.ground_sensor_5, 2)
+            if activity.ground_sensor_6 is not None:
+                activity.ground_sensor_6 = round(activity.ground_sensor_6, 2)
+
             return activity
         except HTTPException as he:
             raise he
@@ -192,6 +231,25 @@ class SensorActivityService:
                     status_code=404,
                     detail=f"No sensor activity found for device with MAC address {mac_address}",
                 )
+
+            # Round float values to 2 decimal places
+            if activity.env_humidity is not None:
+                activity.env_humidity = round(activity.env_humidity, 2)
+            if activity.env_temperature is not None:
+                activity.env_temperature = round(activity.env_temperature, 2)
+            if activity.ground_sensor_1 is not None:
+                activity.ground_sensor_1 = round(activity.ground_sensor_1, 2)
+            if activity.ground_sensor_2 is not None:
+                activity.ground_sensor_2 = round(activity.ground_sensor_2, 2)
+            if activity.ground_sensor_3 is not None:
+                activity.ground_sensor_3 = round(activity.ground_sensor_3, 2)
+            if activity.ground_sensor_4 is not None:
+                activity.ground_sensor_4 = round(activity.ground_sensor_4, 2)
+            if activity.ground_sensor_5 is not None:
+                activity.ground_sensor_5 = round(activity.ground_sensor_5, 2)
+            if activity.ground_sensor_6 is not None:
+                activity.ground_sensor_6 = round(activity.ground_sensor_6, 2)
+
             return activity
         except HTTPException as he:
             raise he
@@ -223,24 +281,24 @@ class SensorActivityService:
                     name=str(activity.zone or activity.mac_address),
                     status=status,
                     latest_reading=activity.created_at,
-                    environment_temperature=float(activity.env_temperature or 0),
-                    environment_humidity=float(activity.env_humidity or 0),
+                    environment_temperature=round(float(activity.env_temperature or 0), 2),
+                    environment_humidity=round(float(activity.env_humidity or 0), 2),
                     planting_boxes=[
                         PlantingBox(
                             name="Cajón 1",
-                            ground_humidity=max(0, float(activity.ground_sensor_1 or 0)),
+                            ground_humidity=round(max(0, float(activity.ground_sensor_1 or 0)), 2),
                         ),
                         PlantingBox(
                             name="Cajón 2",
-                            ground_humidity=max(0, float(activity.ground_sensor_2 or 0)),
+                            ground_humidity=round(max(0, float(activity.ground_sensor_2 or 0)), 2),
                         ),
                         PlantingBox(
                             name="Cajón 3",
-                            ground_humidity=max(0, float(activity.ground_sensor_3 or 0)),
+                            ground_humidity=round(max(0, float(activity.ground_sensor_3 or 0)), 2),
                         ),
                         PlantingBox(
                             name="Cajón 4",
-                            ground_humidity=max(0, float(activity.ground_sensor_4 or 0)),
+                            ground_humidity=round(max(0, float(activity.ground_sensor_4 or 0)), 2),
                         ),
                     ],
                 )
