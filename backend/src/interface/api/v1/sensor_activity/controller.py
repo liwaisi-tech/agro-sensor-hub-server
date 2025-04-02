@@ -1,4 +1,5 @@
 from datetime import datetime
+import fastapi
 from fastapi import APIRouter, Depends, Query
 from typing import List, Optional
 from sqlalchemy.orm import Session
@@ -213,4 +214,52 @@ async def get_latest_sensor_activity_for_all_devices(
     logger.info("Retrieving latest sensor activity for all devices")
     response = sensor_activity_service.get_latest_for_all_devices(db)
     logger.info(f"Latest sensor activity retrieved successfully: {response}")
+    return response
+
+
+@router.get(
+    "/download/last-three-months",
+    response_class=fastapi.responses.PlainTextResponse,
+    summary="Download sensor activity data for the last three months as CSV",
+    description="Downloads a CSV file containing all sensor activity data from the last three months",
+    responses={
+        200: {"description": "CSV file with sensor activity data"},
+        404: {"description": "No sensor activities found in the last three months"},
+        500: {"description": "Internal server error"},
+    },
+)
+async def download_last_three_months_csv(
+    db: Session = Depends(get_db),
+    sensor_activity_service: SensorActivityService = Depends(
+        get_sensor_activity_service
+    ),
+) -> fastapi.responses.PlainTextResponse:
+    """
+    Downloads a CSV file containing all sensor activity data from the last three months.
+    
+    Args:
+        db: Database session
+        sensor_activity_service: Service that handles sensor activity operations
+        
+    Returns:
+        PlainTextResponse: CSV file with sensor activity data
+        
+    Raises:
+        HTTPException: 404 if no activities found in the last three months
+        HTTPException: 500 if there's a server error
+    """
+    logger.info("Generating CSV download for the last three months of sensor activity data")
+    csv_content = sensor_activity_service.get_last_three_months_csv(db)
+    
+    # Create a response with the CSV content and appropriate headers
+    response = fastapi.responses.PlainTextResponse(
+        content=csv_content,
+        media_type="text/csv"
+    )
+    
+    # Set headers for file download
+    filename = f"sensor_activity_data_{datetime.now().strftime('%Y%m%d')}.csv"
+    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    
+    logger.info(f"CSV download generated successfully: {filename}")
     return response

@@ -304,3 +304,66 @@ class SensorActivityService:
                 )
             )
         return result
+        
+    def get_last_three_months_csv(self, db: Session) -> str:
+        """
+        Get sensor activity data for the last three months and format it as CSV.
+        
+        Args:
+            db: Database session
+            
+        Returns:
+            String containing CSV data with sensor activities from the last three months
+            
+        Raises:
+            HTTPException: If there's an error retrieving the sensor activities or generating the CSV
+        """
+        try:
+            # Calculate date range for the last three months
+            end_date = datetime.now(timezone.utc)
+            start_date = end_date - timedelta(days=90)  # Approximately 3 months
+            
+            # Get all sensor activities for the last three months without pagination limit
+            activities = self.repository.get_filtered_list(
+                db=db, 
+                skip=0, 
+                limit=10000,  # Large limit to get all records
+                start_date=start_date, 
+                end_date=end_date
+            )
+            
+            if not activities:
+                raise HTTPException(
+                    status_code=404, detail="No sensor activities found in the last three months"
+                )
+            
+            # Create CSV content
+            csv_content = ["ID,Dirección MAC,Zona,Humedad Ambiente,Temperatura Ambiente," +
+                          "Sensor Tierra 1,Sensor Tierra 2,Sensor Tierra 3,Sensor Tierra 4," +
+                          "Sensor Tierra 5,Sensor Tierra 6,Tiempo de Creación"]
+            
+            for activity in activities:
+                csv_row = [
+                    str(activity.id),
+                    activity.mac_address,
+                    str(activity.zone or ""),
+                    str(activity.env_humidity if activity.env_humidity is not None else ""),
+                    str(activity.env_temperature if activity.env_temperature is not None else ""),
+                    str(activity.ground_sensor_1 if activity.ground_sensor_1 is not None else ""),
+                    str(activity.ground_sensor_2 if activity.ground_sensor_2 is not None else ""),
+                    str(activity.ground_sensor_3 if activity.ground_sensor_3 is not None else ""),
+                    str(activity.ground_sensor_4 if activity.ground_sensor_4 is not None else ""),
+                    str(activity.ground_sensor_5 if activity.ground_sensor_5 is not None else ""),
+                    str(activity.ground_sensor_6 if activity.ground_sensor_6 is not None else ""),
+                    activity.created_at.astimezone().strftime("%Y-%m-%d %I:%M:%S %p %Z")
+                ]
+                csv_content.append(",".join(csv_row))
+            
+            return "\n".join(csv_content)
+            
+        except HTTPException as he:
+            raise he
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Error generating CSV data: {str(e)}"
+            )
